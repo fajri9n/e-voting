@@ -1,0 +1,72 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../database/evoting.db"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  nama      String
+  role      String   @default("PEMILIH") // ADMIN, PANITIA_TPS, PEMILIH
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Candidate {
+  id          Int         @id @default(autoincrement())
+  nomorUrut   Int         @unique
+  namaKetua   String
+  namaWakil   String
+  visi        String
+  misi        String
+  fotoUrl     String?
+  suaraCount  Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  votes       VoteAudit[]
+}
+
+model Voter {
+  id        Int       @id @default(autoincrement())
+  nisn      String    @unique
+  nama      String
+  kelas     String
+  token     String?   @unique
+  hasVoted  Boolean   @default(false)
+  votedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model VoteAudit {
+  id             Int       @id @default(autoincrement())
+  candidateId    Int
+  candidate      Candidate @relation(fields: [candidateId], references: [id])
+  waktuCoblos    DateTime  @default(now())
+  kodeVerifikasi String    @unique
+}
+
+model VotingSession {
+  id        Int       @id @default(autoincrement())
+  isOpen    Boolean   @default(false)
+  openedAt  DateTime?
+  closedAt  DateTime?
+  updatedAt DateTime  @updatedAt
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int?
+  userName   String
+  role       String
+  action     String
+  detail     String
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}

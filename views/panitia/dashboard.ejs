@@ -1,0 +1,78 @@
+<%- include('../layout/header') %>
+
+<div class="space-y-6">
+  <!-- Top Banner Panitia -->
+  <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <span class="p-2.5 bg-amber-50 text-amber-600 rounded-xl text-lg font-bold">
+        <i class="fa-solid fa-people-roof"></i>
+      </span>
+      <div>
+        <h1 class="text-xl font-extrabold text-slate-800">Meja Petugas TPS &amp; Registrasi Pemilih</h1>
+        <p class="text-xs text-slate-500">Verifikasi kartu pelajar/kehadiran fisik pemilih dan cetak token sekali pakai.</p>
+      </div>
+    </div>
+
+    <div>
+      <% if (session && session.isOpen) { %>
+        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1.5"></span>SESI VOTING AKTIF (BISA GENERATE TOKEN)
+        </span>
+      <% } else { %>
+        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-300">
+          <i class="fa-solid fa-triangle-exclamation mr-1"></i>SESI BELUM DIBUKA OLEH ADMIN
+        </span>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Statistik Cards Panitia -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total DPT TPS</p>
+      <h3 class="text-2xl font-black text-slate-800 mt-1"><%= voters.length %> <span class="text-xs font-normal text-slate-500">pemilih</span></h3>
+      <p class="text-[11px] text-slate-500 mt-2"><i class="fa-solid fa-list-check text-blue-500 mr-1"></i> Terdaftar di DPT</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Token Diterbitkan</p>
+      <h3 class="text-2xl font-black text-amber-600 mt-1"><%= hadir %> <span class="text-xs font-normal text-slate-500">token</span></h3>
+      <p class="text-[11px] text-slate-500 mt-2"><i class="fa-solid fa-ticket text-amber-500 mr-1"></i> Siswa yang hadir di TPS</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Sudah Mencoblos</p>
+      <h3 class="text-2xl font-black text-emerald-600 mt-1"><%= sudahVote %> <span class="text-xs font-normal text-slate-500">suara</span></h3>
+      <p class="text-[11px] text-slate-500 mt-2"><i class="fa-solid fa-check text-emerald-500 mr-1"></i> Suara telah masuk ke kotak</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Sedang di Bilik</p>
+      <h3 class="text-2xl font-black text-indigo-600 mt-1"><%= hadir - sudahVote %> <span class="text-xs font-normal text-slate-500">antrean</span></h3>
+      <p class="text-[11px] text-slate-500 mt-2"><i class="fa-solid fa-person-booth text-indigo-500 mr-1"></i> Memegang token aktif</p>
+    </div>
+  </div>
+
+  <!-- Aksi Cepat TPS -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+      <h2 class="text-base font-bold text-slate-800 mb-2">Verifikasi Kehadiran &amp; Rilis Token</h2>
+      <p class="text-xs text-slate-500 mb-4">Cari siswa berdasarkan NISN atau nama di daftar pemilih untuk menyerahkan kode token pemungutan suara.</p>
+      <a href="/panitia/voters"
+        class="inline-flex items-center px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-md shadow-amber-600/20 transition">
+        <i class="fa-solid fa-user-check mr-2"></i> Buka Meja Verifikasi Pemilih &rarr;
+      </a>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+      <h2 class="text-base font-bold text-slate-800 mb-2">Cetak Berita Acara Rekapitulasi</h2>
+      <p class="text-xs text-slate-500 mb-4">Setelah pemungutan suara selesai, cetak dokumen resmi berita acara perolehan suara untuk ditandatangani saksi &amp; panitia.</p>
+      <a href="/panitia/berita-acara"
+        class="inline-flex items-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-md shadow-purple-600/20 transition">
+        <i class="fa-solid fa-print mr-2"></i> Cetak Berita Acara (Print/PDF) &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<%- include('../layout/footer') %>

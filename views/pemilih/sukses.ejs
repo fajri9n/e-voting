@@ -1,0 +1,62 @@
+<%- include('../layout/header') %>
+
+<div class="max-w-lg mx-auto my-8">
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden text-center p-8 sm:p-10">
+    <!-- Success Icon Animation -->
+    <div class="w-20 h-20 mx-auto mb-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-4xl shadow-lg shadow-emerald-500/20">
+      <i class="fa-solid fa-check"></i>
+    </div>
+
+    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 inline-block mb-2">
+      Suara Sah Berhasil Disimpan
+    </span>
+
+    <h1 class="text-2xl font-black text-slate-800 mb-2">Terima Kasih Atas Partisipasi Anda!</h1>
+    <p class="text-xs text-slate-500 max-w-sm mx-auto">
+      Suara Anda telah resmi tercatat di database blockchain audit KPU OSIS secara anonim, rahasia, jujur, dan adil.
+    </p>
+
+    <!-- Bukti Digital / Kode Verifikasi -->
+    <div class="my-6 p-5 rounded-2xl bg-slate-50 border border-slate-200 text-left space-y-3 font-mono text-xs">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <span class="text-slate-500">Kode Audit Suara:</span>
+        <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 tracking-wider">
+          <%= proof.kodeVerifikasi %>
+        </span>
+      </div>
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <span class="text-slate-500">Waktu Pencoblosan:</span>
+        <span class="text-slate-800 font-semibold"><%= proof.waktu %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-slate-500">Status Token TPS:</span>
+        <span class="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+          HANGUS (1X PAKAI)
+        </span>
+      </div>
+    </div>
+
+    <!-- Alert Keamanan Kerahasiaan -->
+    <div class="p-3 mb-6 bg-blue-50 border border-blue-200 rounded-xl text-left flex items-start space-x-2 text-xs text-blue-800">
+      <i class="fa-solid fa-shield-halved text-blue-600 text-sm mt-0.5 flex-shrink-0"></i>
+      <p class="text-[11px] leading-tight">
+        Sesuai asas LUBER, identitas Anda tidak dikaitkan dengan nama paslon yang Anda pilih di tabel audit suara.
+      </p>
+    </div>
+
+    <div class="space-y-3">
+      <a href="/live-count" target="_blank"
+        class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-chart-column"></i>
+        <span>Pantau Quick Count Hasil Pemilihan</span>
+      </a>
+
+      <a href="/pemilih/bilik"
+        class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition block">
+        Kembali ke Layar Bilik Suara
+      </a>
+    </div>
+  </div>
+</div>
+
+<%- include('../layout/footer') %>

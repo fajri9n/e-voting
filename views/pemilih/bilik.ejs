@@ -1,0 +1,87 @@
+<%- include('../layout/header') %>
+
+<div class="max-w-md mx-auto my-6">
+  <!-- Status Sesi Notice -->
+  <% if (!session || !session.isOpen) { %>
+    <div class="mb-4 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center shadow-sm">
+      <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl mr-3 flex-shrink-0"></i>
+      <div>
+        <p class="font-bold">Bilik Suara Saat Ini Belum Dibuka</p>
+        <p class="text-[11px] text-amber-700">Mohon menunggu instruksi dari panitia TPS dan pembina OSIS untuk membuka sesi pemilihan.</p>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-br from-indigo-700 via-blue-600 to-indigo-800 p-8 text-center text-white relative">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-inner">
+        <i class="fa-solid fa-person-booth text-3xl text-white"></i>
+      </div>
+      <h1 class="text-xl font-extrabold tracking-tight">Bilik Suara Digital (E-Voting)</h1>
+      <p class="text-xs text-indigo-100 mt-1">Pemilihan Ketua &amp; Wakil Ketua OSIS - MPK</p>
+      <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-white/15 text-[10px] font-bold tracking-widest uppercase">
+        <i class="fa-solid fa-lock text-[9px] mr-1"></i> Rahasia • Bebas • Jujur • Adil
+      </div>
+    </div>
+
+    <!-- Form Input NISN & Token -->
+    <div class="p-6 sm:p-8">
+      <form action="/pemilih/bilik/verify" method="POST" class="space-y-4">
+        <div>
+          <label for="nisn" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            Nomor Induk Siswa Nasional (NISN)
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-id-card"></i>
+            </span>
+            <input type="text" id="nisn" name="nisn" required placeholder="Contoh: 0051234001"
+              class="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+          </div>
+        </div>
+
+        <div>
+          <label for="token" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            Token Sekali Pakai (Dari Panitia TPS)
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-ticket"></i>
+            </span>
+            <input type="text" id="token" name="token" required placeholder="Contoh: 8E7A310F" maxlength="12"
+              class="w-full pl-10 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-black tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1">
+            <i class="fa-solid fa-circle-info mr-1"></i> Token hangus otomatis setelah 1 kali pencoblosan.
+          </p>
+        </div>
+
+        <button type="submit" <%= (!session || !session.isOpen) ? 'disabled' : '' %>
+          class="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-lg shadow-indigo-600/25 transition flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span>Buka Surat Suara Digital</span>
+        </button>
+      </form>
+
+      <!-- Petunjuk Langkah Memilih -->
+      <div class="mt-6 pt-5 border-t border-slate-100 text-xs text-slate-500 space-y-2">
+        <p class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Panduan Masuk Bilik:</p>
+        <div class="flex items-start space-x-2">
+          <span class="w-4 h-4 rounded-full bg-indigo-50 text-indigo-600 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+          <p>Minta token sekali pakai kepada petugas TPS di meja registrasi.</p>
+        </div>
+        <div class="flex items-start space-x-2">
+          <span class="w-4 h-4 rounded-full bg-indigo-50 text-indigo-600 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+          <p>Masukkan NISN dan token di atas, lalu pilih paslon pilihan Anda.</p>
+        </div>
+        <div class="flex items-start space-x-2">
+          <span class="w-4 h-4 rounded-full bg-indigo-50 text-indigo-600 font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+          <p>Konfirmasi coblos, dan simpan bukti kode keabsahan suara Anda.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layout/footer') %>

@@ -1,0 +1,118 @@
+<%- include('../layout/header') %>
+
+<div class="max-w-md mx-auto my-8">
+  <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/80 overflow-hidden">
+    <!-- Header Card -->
+    <div class="bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 px-6 py-8 text-center text-white">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-inner">
+        <i class="fa-solid fa-vote-yea text-3xl text-white"></i>
+      </div>
+      <h1 class="text-2xl font-extrabold tracking-tight">Portal Masuk E-Voting</h1>
+      <p class="text-xs text-blue-100 mt-1">Pemilihan Ketua & Wakil Ketua OSIS - MPK</p>
+    </div>
+
+    <!-- Form Content -->
+    <div class="p-6 sm:p-8">
+      <form action="/auth/login" method="POST" class="space-y-4">
+        <div>
+          <label for="username" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            Username
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-user"></i>
+            </span>
+            <input type="text" id="username" name="username" required
+              class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+              placeholder="Masukkan username Anda">
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            Password
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input type="password" id="password" name="password" required
+              class="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+              placeholder="••••••••">
+          </div>
+        </div>
+
+        <button type="submit"
+          class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition transform active:scale-[0.99] flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span>Masuk Sistem</span>
+        </button>
+      </form>
+
+      <!-- Quick Switch Demo Section (Sesuai Permintaan Spesifikasi) -->
+      <div class="mt-8 pt-6 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <i class="fa-solid fa-bolt-lightning text-amber-500 mr-1"></i>Switch Akun Demo Cepat
+          </span>
+          <span class="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Klik untuk auto-fill</span>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-2">
+          <!-- Demo Admin -->
+          <button type="button" onclick="setDemo('admin', 'password123')"
+            class="p-2.5 text-center rounded-xl border border-purple-200 bg-purple-50/60 hover:bg-purple-100 hover:border-purple-300 transition text-purple-900 group">
+            <div class="w-7 h-7 mx-auto mb-1 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs shadow group-hover:scale-105 transition">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <p class="text-xs font-bold">Admin</p>
+            <p class="text-[10px] text-purple-600">Pembina/KPU</p>
+          </button>
+
+          <!-- Demo Panitia -->
+          <button type="button" onclick="setDemo('panitia', 'password123')"
+            class="p-2.5 text-center rounded-xl border border-amber-200 bg-amber-50/60 hover:bg-amber-100 hover:border-amber-300 transition text-amber-900 group">
+            <div class="w-7 h-7 mx-auto mb-1 rounded-lg bg-amber-600 text-white flex items-center justify-center text-xs shadow group-hover:scale-105 transition">
+              <i class="fa-solid fa-id-badge"></i>
+            </div>
+            <p class="text-xs font-bold">Panitia</p>
+            <p class="text-[10px] text-amber-600">Operator TPS</p>
+          </button>
+
+          <!-- Demo Pemilih -->
+          <button type="button" onclick="setDemo('pemilih', 'password123')"
+            class="p-2.5 text-center rounded-xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100 hover:border-emerald-300 transition text-emerald-900 group">
+            <div class="w-7 h-7 mx-auto mb-1 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs shadow group-hover:scale-105 transition">
+              <i class="fa-solid fa-person-booth"></i>
+            </div>
+            <p class="text-xs font-bold">Pemilih</p>
+            <p class="text-[10px] text-emerald-600">Siswa Demo</p>
+          </button>
+        </div>
+
+        <!-- Banner Langsung Ke Bilik Suara Siswa -->
+        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-person-booth text-blue-600 text-base"></i>
+            <div class="text-left">
+              <p class="text-xs font-bold text-blue-900">Masuk Bilik Suara (Siswa)</p>
+              <p class="text-[11px] text-blue-600">Punya Token TPS? Coblos langsung di sini</p>
+            </div>
+          </div>
+          <a href="/pemilih/bilik" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm transition">
+            Bilik Suara &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setDemo(username, password) {
+    document.getElementById('username').value = username;
+    document.getElementById('password').value = password;
+  }
+</script>
+
+<%- include('../layout/footer') %>

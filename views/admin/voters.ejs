@@ -1,0 +1,109 @@
+<%- include('../layout/header') %>
+
+<div class="space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-extrabold text-slate-800 flex items-center">
+        <i class="fa-solid fa-id-card text-teal-600 mr-2"></i>
+        Daftar Pemilih Tetap (DPT) &amp; Status Token
+      </h1>
+      <p class="text-xs text-slate-500">Monitoring kehadiran siswa, status penggunaan token sekali pakai, dan kontrol reset.</p>
+    </div>
+    <div class="flex items-center space-x-2">
+      <span class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
+        Total DPT: <strong><%= voters.length %></strong> Siswa
+      </span>
+      <span class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
+        Sudah Memilih: <strong><%= voters.filter(v => v.hasVoted).length %></strong>
+      </span>
+    </div>
+  </div>
+
+  <!-- Table Container -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+      <input type="text" id="voterSearch" onkeyup="filterVoterTable()" placeholder="Cari NISN, nama siswa, atau kelas..."
+        class="w-full max-w-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 transition">
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="votersTable">
+        <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4">No</th>
+            <th class="py-3 px-4">NISN</th>
+            <th class="py-3 px-4">Nama Siswa</th>
+            <th class="py-3 px-4">Kelas</th>
+            <th class="py-3 px-4">Token Saat Ini</th>
+            <th class="py-3 px-4">Status Hak Suara</th>
+            <th class="py-3 px-4">Waktu Mencoblos</th>
+            <th class="py-3 px-4 text-center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% voters.forEach((v, idx) => { %>
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="py-3 px-4 text-slate-400 font-medium"><%= idx + 1 %></td>
+              <td class="py-3 px-4 font-mono font-semibold text-slate-700"><%= v.nisn %></td>
+              <td class="py-3 px-4 font-bold text-slate-800"><%= v.nama %></td>
+              <td class="py-3 px-4 text-slate-600"><%= v.kelas %></td>
+              <td class="py-3 px-4 font-mono font-bold">
+                <% if (v.token) { %>
+                  <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 tracking-wider"><%= v.token %></span>
+                <% } else if (v.hasVoted) { %>
+                  <span class="text-slate-400 italic">Hangus (Used)</span>
+                <% } else { %>
+                  <span class="text-slate-400 italic">Belum digenerate</span>
+                <% } %>
+              </td>
+              <td class="py-3 px-4">
+                <% if (v.hasVoted) { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                    <i class="fa-solid fa-check text-[9px] mr-1"></i>Sudah Memilih
+                  </span>
+                <% } else if (v.token) { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                    <i class="fa-solid fa-ticket text-[9px] mr-1"></i>Token Aktif
+                  </span>
+                <% } else { %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                    <i class="fa-solid fa-clock text-[9px] mr-1"></i>Belum Hadir TPS
+                  </span>
+                <% } %>
+              </td>
+              <td class="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                <%= v.votedAt ? new Date(v.votedAt).toLocaleString('id-ID') : '-' %>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <% if (v.hasVoted || v.token) { %>
+                  <form action="/admin/voters/<%= v.id %>/reset" method="POST" class="inline"
+                    onsubmit="return confirm('Reset status hak suara pemilih ini? Tindakan ini akan mengosongkan status memilih dan token.')">
+                    <button type="submit" title="Reset Status Voting"
+                      class="px-2.5 py-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition">
+                      <i class="fa-solid fa-rotate-left mr-1"></i>Reset
+                    </button>
+                  </form>
+                <% } else { %>
+                  <span class="text-slate-300">-</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterVoterTable() {
+    const query = document.getElementById('voterSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('#votersTable tbody tr');
+    rows.forEach(r => {
+      const text = r.textContent.toLowerCase();
+      r.style.display = text.includes(query) ? '' : 'none';
+    });
+  }
+</script>
+
+<%- include('../layout/footer') %>

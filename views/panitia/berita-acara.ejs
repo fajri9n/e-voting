@@ -1,0 +1,146 @@
+<%- include('../layout/header') %>
+
+<div class="max-w-4xl mx-auto space-y-6">
+  <!-- Bar Tombol Aksi di Atas (Disembunyikan saat print) -->
+  <div class="no-print bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+    <div>
+      <h2 class="text-sm font-bold text-slate-800">Dokumen Berita Acara Rekapitulasi Hasil Pemilihan</h2>
+      <p class="text-xs text-slate-500">Siap dicetak sebagai arsip resmi KPU Sekolah &amp; Pembina OSIS.</p>
+    </div>
+    <div class="flex items-center space-x-2">
+      <a href="/panitia/dashboard" class="px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 transition">
+        &larr; Kembali
+      </a>
+      <button onclick="window.print()"
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/20 transition flex items-center space-x-1.5">
+        <i class="fa-solid fa-print"></i>
+        <span>Cetak Berita Acara (Print/PDF)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KERTAS BERITA ACARA FORMAL (Print-Optimized) -->
+  <div class="bg-white p-8 sm:p-12 rounded-2xl border border-slate-200 shadow-md text-slate-900 font-serif print:shadow-none print:border-none print:p-0">
+    <!-- Kop Surat KPU Sekolah -->
+    <div class="text-center border-b-4 border-double border-slate-900 pb-4 mb-6">
+      <h3 class="text-xs font-bold uppercase tracking-widest text-slate-700 font-sans">KOMISI PEMILIHAN UMUM SISWA (KPU OSIS)</h3>
+      <h2 class="text-xl font-black uppercase text-slate-900 tracking-wide mt-1">SEKOLAH MENENGAH ATAS / KEJURUAN NEGERI</h2>
+      <p class="text-xs text-slate-600 font-sans mt-0.5">Sekretariat: Ruang OSIS, Kampus Sekolah | Tahun Ajaran 2024/2025</p>
+    </div>
+
+    <!-- Judul Dokumen -->
+    <div class="text-center my-6">
+      <h1 class="text-base font-bold underline uppercase tracking-wider">BERITA ACARA REKAPITULASI HASIL PENGHITUNGAN SUARA</h1>
+      <p class="text-xs font-sans text-slate-600 mt-1">NOMOR: 042/BA-KPU/OSIS-MPK/<%= new Date().getFullYear() %></p>
+    </div>
+
+    <!-- Isi Mukadimah Berita Acara -->
+    <div class="text-xs font-sans leading-relaxed text-slate-800 space-y-3 mb-6 text-justify">
+      <p>
+        Pada hari ini, <strong><%= nowDate %></strong>, telah dilaksanakan pemungutan suara elektronik (E-Voting) dalam rangka 
+        Pemilihan Ketua dan Wakil Ketua Organisasi Siswa Intra Sekolah (OSIS) serta Majelis Perwakilan Kelas (MPK) periode masa bakti berjalan.
+      </p>
+      <p>
+        Pemungutan suara dilaksanakan secara langsung, umum, bebas, rahasia, jujur, dan adil (LUBER-JURDIL) berbasis token voting sekali pakai 
+        dengan rincian rekapitulasi sebagai berikut:
+      </p>
+    </div>
+
+    <!-- Tabel Rekapitulasi Kehadiran & Suara -->
+    <div class="mb-6 font-sans">
+      <h4 class="text-xs font-bold uppercase text-slate-800 mb-2">I. DATA PEMILIH DAN PENGGUNAAN HAK SUARA</h4>
+      <table class="w-full text-xs border-collapse border border-slate-400">
+        <tbody>
+          <tr class="border-b border-slate-300">
+            <td class="p-2 border-r border-slate-300 font-semibold w-8 text-center">1.</td>
+            <td class="p-2 border-r border-slate-300">Jumlah Pemilih Terdaftar dalam DPT</td>
+            <td class="p-2 font-bold font-mono text-right w-28"><%= totalDPT %> orang</td>
+          </tr>
+          <tr class="border-b border-slate-300">
+            <td class="p-2 border-r border-slate-300 font-semibold text-center">2.</td>
+            <td class="p-2 border-r border-slate-300">Jumlah Pemilih yang Menggunakan Hak Suara (Suara Sah)</td>
+            <td class="p-2 font-bold font-mono text-right text-emerald-700"><%= totalSuara %> orang</td>
+          </tr>
+          <tr class="border-b border-slate-300">
+            <td class="p-2 border-r border-slate-300 font-semibold text-center">3.</td>
+            <td class="p-2 border-r border-slate-300">Jumlah Pemilih yang Tidak Hadir / Golput</td>
+            <td class="p-2 font-bold font-mono text-right text-rose-700"><%= totalAbsen %> orang</td>
+          </tr>
+          <tr>
+            <td class="p-2 border-r border-slate-300 font-semibold text-center">4.</td>
+            <td class="p-2 border-r border-slate-300">Persentase Partisipasi Pemilih</td>
+            <td class="p-2 font-bold font-mono text-right"><%= totalDPT > 0 ? ((totalSuara / totalDPT) * 100).toFixed(1) : 0 %>%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tabel Perolehan Suara Pasangan Calon -->
+    <div class="mb-8 font-sans">
+      <h4 class="text-xs font-bold uppercase text-slate-800 mb-2">II. PEROLEHAN SUARA PASANGAN CALON</h4>
+      <table class="w-full text-xs border-collapse border border-slate-400 text-center">
+        <thead class="bg-slate-100 font-bold border-b border-slate-400">
+          <tr>
+            <th class="p-2 border-r border-slate-400 w-16">No. Urut</th>
+            <th class="p-2 border-r border-slate-400 text-left">Nama Pasangan Calon (Ketua &amp; Wakil)</th>
+            <th class="p-2 border-r border-slate-400 w-32">Perolehan Suara</th>
+            <th class="p-2 w-28">Persentase</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-300">
+          <% candidates.forEach(c => { 
+            const pct = totalSuara > 0 ? ((c.suaraCount / totalSuara) * 100).toFixed(1) : 0;
+          %>
+            <tr>
+              <td class="p-2 border-r border-slate-300 font-bold">0<%= c.nomorUrut %></td>
+              <td class="p-2 border-r border-slate-300 text-left">
+                <strong><%= c.namaKetua %></strong> &amp; <span><%= c.namaWakil %></span>
+              </td>
+              <td class="p-2 border-r border-slate-300 font-bold font-mono text-base"><%= c.suaraCount %></td>
+              <td class="p-2 font-bold font-mono"><%= pct %>%</td>
+            </tr>
+          <% }) %>
+          <tr class="bg-slate-50 font-bold border-t-2 border-slate-400">
+            <td colspan="2" class="p-2 border-r border-slate-300 text-right uppercase">Total Suara Sah Masuk:</td>
+            <td class="p-2 border-r border-slate-300 font-mono text-base"><%= totalSuara %></td>
+            <td class="p-2 font-mono">100.0%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pernyataan Pemenang -->
+    <% if (pemenang && totalSuara > 0) { %>
+      <div class="p-3 mb-8 bg-slate-50 border border-slate-300 rounded-lg text-xs font-sans leading-relaxed">
+        Berdasarkan hasil rekapitulasi suara sah, pasangan calon nomor urut <strong>0<%= pemenang.nomorUrut %></strong> atas nama 
+        <strong><%= pemenang.namaKetua %></strong> &amp; <strong><%= pemenang.namaWakil %></strong> 
+        dinyatakan memperoleh suara terbanyak sejumlah <strong><%= pemenang.suaraCount %> suara</strong> dan berhak ditetapkan sebagai 
+        Ketua dan Wakil Ketua OSIS Terpilih.
+      </div>
+    <% } %>
+
+    <!-- Kolom Tanda Tangan Saksi & Panitia -->
+    <div class="grid grid-cols-3 gap-6 font-sans text-xs text-center pt-6 mt-8 border-t border-slate-300">
+      <div>
+        <p class="font-semibold text-slate-600">Saksi Pasangan Calon</p>
+        <div class="h-20"></div>
+        <p class="font-bold underline text-slate-900">( ........................................ )</p>
+        <p class="text-[10px] text-slate-500">Perwakilan Paslon</p>
+      </div>
+      <div>
+        <p class="font-semibold text-slate-600">Ketua Panitia TPS</p>
+        <div class="h-20"></div>
+        <p class="font-bold underline text-slate-900">( <%= user ? user.nama : 'Ibu Sari Dewi' %> )</p>
+        <p class="text-[10px] text-slate-500">Operator &amp; Saksi TPS</p>
+      </div>
+      <div>
+        <p class="font-semibold text-slate-600">Mengetahui, Pembina OSIS</p>
+        <div class="h-20"></div>
+        <p class="font-bold underline text-slate-900">( Bapak Rudi Hartono )</p>
+        <p class="text-[10px] text-slate-500">Ketua KPU Sekolah</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layout/footer') %>

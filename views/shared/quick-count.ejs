@@ -1,0 +1,128 @@
+<%- include('../layout/header') %>
+
+<div class="space-y-6">
+  <!-- Header Bar -->
+  <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center space-x-2">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 animate-pulse">
+          <span class="w-2 h-2 rounded-full bg-rose-500 mr-1.5"></span>LIVE COUNT REAL-TIME
+        </span>
+        <span class="text-xs text-slate-400">| Auto-sync setiap 3 detik</span>
+      </div>
+      <h1 class="text-2xl font-black text-slate-800 tracking-tight mt-1">Perolehan Suara Pemilihan OSIS &amp; MPK</h1>
+      <p class="text-xs text-slate-500">Transparansi penghitungan suara digital Komisi Pemilihan Siswa.</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="flex items-center space-x-4">
+      <div class="text-right">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Suara Masuk</p>
+        <p class="text-2xl font-black text-emerald-600" id="statTotalSuara"><%= totalSuara %> <span class="text-xs font-normal text-slate-500">/ <%= totalDPT %></span></p>
+      </div>
+      <div class="h-10 w-px bg-slate-200"></div>
+      <div class="text-right">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Partisipasi DPT</p>
+        <p class="text-2xl font-black text-indigo-600" id="statPartisipasi">
+          <%= totalDPT > 0 ? ((totalSuara / totalDPT) * 100).toFixed(1) : 0 %>%
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards Paslon (Perolehan Suara & Persentase) -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="candidatesGrid">
+    <% candidates.forEach(c => { 
+      const pct = totalSuara > 0 ? ((c.suaraCount / totalSuara) * 100).toFixed(1) : 0;
+    %>
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden flex flex-col transition hover:shadow-xl duration-300" id="card-<%= c.id %>">
+        <!-- Nomor Urut & Foto -->
+        <div class="relative bg-gradient-to-br from-slate-100 to-slate-200 h-52 flex items-center justify-center p-4">
+          <span class="absolute top-4 left-4 w-10 h-10 rounded-2xl bg-indigo-600 text-white font-black text-base flex items-center justify-center shadow-lg">
+            0<%= c.nomorUrut %>
+          </span>
+
+          <div class="absolute top-4 right-4 text-right">
+            <span class="text-2xl font-black text-indigo-700 font-mono" id="pct-<%= c.id %>"><%= pct %>%</span>
+          </div>
+
+          <% if (c.fotoUrl) { %>
+            <img src="<%= c.fotoUrl %>" alt="Paslon <%= c.nomorUrut %>" class="max-h-full object-contain drop-shadow-md">
+          <% } else { %>
+            <div class="text-center text-slate-400">
+              <i class="fa-solid fa-users text-5xl mb-2 text-slate-300"></i>
+              <p class="text-xs font-bold">Paslon 0<%= c.nomorUrut %></p>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Body Perolehan -->
+        <div class="p-6 flex-1 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-800 leading-snug"><%= c.namaKetua %></h3>
+            <p class="text-xs font-bold text-indigo-600">&amp; <%= c.namaWakil %></p>
+            <p class="text-[11px] text-slate-500 mt-2 line-clamp-2"><%= c.visi %></p>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-100">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Perolehan Suara:</span>
+              <span class="text-2xl font-black text-slate-900 font-mono" id="count-<%= c.id %>"><%= c.suaraCount %></span>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5 border border-slate-200">
+              <div id="bar-<%= c.id %>" class="bg-gradient-to-r from-blue-600 to-indigo-600 h-full rounded-full transition-all duration-700" style="width: <%= pct %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <!-- Live Log Indicator -->
+  <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between text-xs text-slate-500">
+    <div class="flex items-center space-x-2">
+      <i class="fa-solid fa-arrows-rotate text-blue-500 animate-spin"></i>
+      <span>Sistem terhubung ke WebSocket / Live Polling Engine.</span>
+    </div>
+    <span id="lastUpdated" class="text-[11px] font-mono text-slate-400">Update Terakhir: <%= new Date().toLocaleTimeString('id-ID') %></span>
+  </div>
+</div>
+
+<script>
+  // Real-time polling setiap 3 detik
+  async function fetchLiveCount() {
+    try {
+      const res = await fetch('/api/live-count');
+      if (!res.ok) return;
+      const data = await res.json();
+      
+      const totalSuara = data.totalSuara;
+      const totalDPT = data.totalDPT;
+      const partisipasi = totalDPT > 0 ? ((totalSuara / totalDPT) * 100).toFixed(1) : 0;
+
+      document.getElementById('statTotalSuara').innerHTML = `${totalSuara} <span class="text-xs font-normal text-slate-500">/ ${totalDPT}</span>`;
+      document.getElementById('statPartisipasi').innerText = `${partisipasi}%`;
+      document.getElementById('lastUpdated').innerText = 'Update Terakhir: ' + new Date().toLocaleTimeString('id-ID');
+
+      data.candidates.forEach(c => {
+        const pct = totalSuara > 0 ? ((c.suaraCount / totalSuara) * 100).toFixed(1) : 0;
+        
+        const countEl = document.getElementById(`count-${c.id}`);
+        const pctEl = document.getElementById(`pct-${c.id}`);
+        const barEl = document.getElementById(`bar-${c.id}`);
+
+        if (countEl) countEl.innerText = c.suaraCount;
+        if (pctEl) pctEl.innerText = `${pct}%`;
+        if (barEl) barEl.style.width = `${pct}%`;
+      });
+    } catch (e) {
+      console.error('Live polling error:', e);
+    }
+  }
+
+  setInterval(fetchLiveCount, 3000);
+</script>
+
+<%- include('../layout/footer') %>

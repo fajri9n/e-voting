@@ -1,0 +1,38 @@
+{
+  "name": "evoting-osis-mpk",
+  "version": "1.0.0",
+  "description": "Sistem E-Voting Pemilihan OSIS & MPK – Berbasis Token Sekali Pakai",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "db:push": "npx prisma db push",
+    "db:migrate": "npx prisma migrate dev --name init",
+    "db:seed": "node prisma/seed.js",
+    "db:studio": "npx prisma studio",
+    "setup": "npm run db:push && npm run db:seed"
+  },
+  "keywords": [
+    "evoting",
+    "osis",
+    "mpk",
+    "nodejs",
+    "express",
+    "prisma"
+  ],
+  "author": "Sistem E-Voting Sekolah",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "bcryptjs": "^3.0.3",
+    "connect-flash": "^0.1.1",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "multer": "^2.4.0",
+    "uuid": "^14.0.2"
+  },
+  "devDependencies": {
+    "prisma": "5.22.0"
+  }
+}

@@ -1,0 +1,87 @@
+<%- include('../layout/header') %>
+
+<div class="space-y-6">
+  <!-- Header Page -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-extrabold text-slate-800 flex items-center">
+        <i class="fa-solid fa-users text-indigo-600 mr-2"></i>
+        Kelola Pasangan Calon (Kandidat)
+      </h1>
+      <p class="text-xs text-slate-500">Kelola nomor urut, foto resmi, nama ketua &amp; wakil, visi, dan misi paslon OSIS.</p>
+    </div>
+    <div>
+      <a href="/admin/candidates/add"
+        class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/20 transition">
+        <i class="fa-solid fa-plus mr-1.5"></i>
+        <span>Tambah Paslon Baru</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Candidates Grid Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <% candidates.forEach(c => { %>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <!-- Top Card: Nomor Urut Badge & Photo -->
+        <div class="relative bg-gradient-to-br from-slate-100 to-slate-200 h-48 flex items-center justify-center p-4">
+          <span class="absolute top-3 left-3 w-9 h-9 rounded-xl bg-indigo-600 text-white font-extrabold text-sm flex items-center justify-center shadow-lg">
+            0<%= c.nomorUrut %>
+          </span>
+          <span class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/90 text-slate-700 shadow-sm backdrop-blur">
+            <i class="fa-solid fa-check-to-slot text-emerald-600 mr-1"></i><%= c.suaraCount %> Suara
+          </span>
+
+          <% if (c.fotoUrl) { %>
+            <img src="<%= c.fotoUrl %>" alt="Paslon 0<%= c.nomorUrut %>" class="max-h-full object-contain drop-shadow-md">
+          <% } else { %>
+            <div class="text-center text-slate-400">
+              <i class="fa-solid fa-user-group text-4xl mb-1"></i>
+              <p class="text-[11px]">Belum ada foto</p>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Body Card -->
+        <div class="p-5 flex-1 flex flex-col">
+          <div class="mb-3">
+            <h3 class="text-base font-extrabold text-slate-800 leading-snug"><%= c.namaKetua %></h3>
+            <p class="text-xs font-semibold text-indigo-600">&amp; <%= c.namaWakil %></p>
+          </div>
+
+          <!-- Visi Misi Preview -->
+          <div class="space-y-2 mb-4 flex-1">
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
+              <p class="font-bold text-slate-700 text-[11px] uppercase tracking-wider mb-0.5">Visi Utama:</p>
+              <p class="text-slate-600 text-[11px] line-clamp-2"><%= c.visi %></p>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
+              <p class="font-bold text-slate-700 text-[11px] uppercase tracking-wider mb-0.5">Misi Unggulan:</p>
+              <p class="text-slate-600 text-[11px] line-clamp-3 whitespace-pre-line"><%= c.misi %></p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+            <a href="/admin/candidates/<%= c.id %>/edit"
+              class="px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition flex items-center space-x-1">
+              <i class="fa-solid fa-pen-to-square text-indigo-600"></i>
+              <span>Edit Paslon</span>
+            </a>
+
+            <form action="/admin/candidates/<%= c.id %>/delete" method="POST" class="inline"
+              onsubmit="return confirm('Apakah Anda yakin ingin menghapus Paslon Nomor <%= c.nomorUrut %>? Tindakan ini tidak dapat dibatalkan.')">
+              <button type="submit" <%= c.suaraCount > 0 ? 'disabled title="Tidak bisa dihapus karena sudah ada suara masuk"' : '' %>
+                class="px-3 py-1.5 text-xs font-bold rounded-lg transition flex items-center space-x-1 <%= c.suaraCount > 0 ? 'text-slate-300 cursor-not-allowed' : 'text-rose-600 hover:bg-rose-50' %>">
+                <i class="fa-solid fa-trash"></i>
+                <span>Hapus</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<%- include('../layout/footer') %>
