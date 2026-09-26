@@ -40,6 +40,8 @@ exports.showAddCandidate = (req, res) => {
   res.render('admin/candidate-form', { title: 'Tambah Paslon', candidate: null });
 };
 
+const defaultPhotos = ['/uploads/paslon1.svg', '/uploads/paslon2.svg', '/uploads/paslon3.svg'];
+
 exports.doAddCandidate = async (req, res) => {
   const { nomorUrut, namaKetua, namaWakil, visi, misi } = req.body;
   const fotoUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -51,7 +53,10 @@ exports.doAddCandidate = async (req, res) => {
     req.flash('success', `Paslon No. ${nomorUrut} berhasil ditambahkan.`);
     res.redirect('/admin/candidates');
   } catch (e) {
-    req.flash('error', 'Gagal menambahkan paslon: ' + e.message);
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    req.flash('error', 'Gagal menambahkan paslon: ' + (e.code === 'P2002' ? 'Nomor urut sudah digunakan.' : e.message));
     res.redirect('/admin/candidates/add');
   }
 };
@@ -67,14 +72,26 @@ exports.doEditCandidate = async (req, res) => {
   const { nomorUrut, namaKetua, namaWakil, visi, misi } = req.body;
   try {
     const existing = await prisma.candidate.findUnique({ where: { id } });
+    if (!existing) {
+      if (req.file && fs.existsSync(req.file.path)) {
+        try { fs.unlinkSync(req.file.path); } catch (_) {}
+      }
+      req.flash('error', 'Paslon tidak ditemukan.');
+      return res.redirect('/admin/candidates');
+    }
+
     let fotoUrl = existing.fotoUrl;
     if (req.file) {
-      if (fotoUrl && !fotoUrl.startsWith('/uploads/paslon')) {
+      // Hapus file custom lama jika bukan foto default
+      if (fotoUrl && !defaultPhotos.includes(fotoUrl)) {
         const oldPath = path.join(__dirname, '../public', fotoUrl);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        if (fs.existsSync(oldPath)) {
+          try { fs.unlinkSync(oldPath); } catch (_) {}
+        }
       }
       fotoUrl = `/uploads/${req.file.filename}`;
     }
+
     await prisma.candidate.update({
       where: { id },
       data: { nomorUrut: parseInt(nomorUrut), namaKetua, namaWakil, visi, misi, fotoUrl },
@@ -83,7 +100,10 @@ exports.doEditCandidate = async (req, res) => {
     req.flash('success', 'Data paslon berhasil diperbarui.');
     res.redirect('/admin/candidates');
   } catch (e) {
-    req.flash('error', 'Gagal memperbarui paslon: ' + e.message);
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    req.flash('error', 'Gagal memperbarui paslon: ' + (e.code === 'P2002' ? 'Nomor urut sudah digunakan.' : e.message));
     res.redirect(`/admin/candidates/${id}/edit`);
   }
 };
@@ -92,16 +112,29 @@ exports.doDeleteCandidate = async (req, res) => {
   const id = parseInt(req.params.id);
   try {
     const existing = await prisma.candidate.findUnique({ where: { id } });
-    if (existing?.suaraCount > 0) {
+    if (!existing) {
+      req.flash('error', 'Paslon tidak ditemukan.');
+      return res.redirect('/admin/candidates');
+    }
+    if (existing.suaraCount > 0) {
       req.flash('error', 'Tidak dapat menghapus paslon yang sudah menerima suara.');
       return res.redirect('/admin/candidates');
     }
     await prisma.candidate.delete({ where: { id } });
-    await logAudit(req, 'DELETE_CANDIDATE', `Paslon "${existing?.namaKetua}" dihapus.`);
+
+    // Hapus file foto custom jika bukan file default
+    if (existing.fotoUrl && !defaultPhotos.includes(existing.fotoUrl)) {
+      const oldPath = path.join(__dirname, '../public', existing.fotoUrl);
+      if (fs.existsSync(oldPath)) {
+        try { fs.unlinkSync(oldPath); } catch (_) {}
+      }
+    }
+
+    await logAudit(req, 'DELETE_CANDIDATE', `Paslon "${existing.namaKetua}" dihapus.`);
     req.flash('success', 'Paslon berhasil dihapus.');
     res.redirect('/admin/candidates');
   } catch (e) {
-    req.flash('error', 'Gagal menghapus paslon.');
+    req.flash('error', 'Gagal menghapus paslon: ' + e.message);
     res.redirect('/admin/candidates');
   }
 };
@@ -177,15 +210,19 @@ exports.resetVoter = async (req, res) => {
   const id = parseInt(req.params.id);
   try {
     const voter = await prisma.voter.findUnique({ where: { id } });
+    if (!voter) {
+      req.flash('error', 'Pemilih tidak ditemukan.');
+      return res.redirect('/admin/voters');
+    }
     await prisma.voter.update({
       where: { id },
       data: { hasVoted: false, votedAt: null, token: null },
     });
-    await logAudit(req, 'RESET_VOTER', `Token dan status voting pemilih "${voter?.nama}" (${voter?.nisn}) direset.`);
-    req.flash('warning', `Status pemilih ${voter?.nama} berhasil direset.`);
+    await logAudit(req, 'RESET_VOTER', `Token dan status voting pemilih "${voter.nama}" (${voter.nisn}) direset.`);
+    req.flash('warning', `Status pemilih ${voter.nama} berhasil direset.`);
     res.redirect('/admin/voters');
   } catch (e) {
-    req.flash('error', 'Gagal reset pemilih.');
+    req.flash('error', 'Gagal reset pemilih: ' + e.message);
     res.redirect('/admin/voters');
   }
 };

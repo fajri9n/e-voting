@@ -71,11 +71,14 @@ app.use((err, req, res, next) => {
 
 // ─── Server Start ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`\n🗳️  E-Voting OSIS & MPK – Server berjalan di http://localhost:${PORT}`);
-  console.log('─────────────────────────────────────────────────────');
-  console.log(`   Admin   → http://localhost:${PORT}/admin/dashboard`);
-  console.log(`   Panitia → http://localhost:${PORT}/panitia/dashboard`);
-  console.log(`   Pemilih → http://localhost:${PORT}/pemilih/bilik`);
-  console.log('─────────────────────────────────────────────────────\n');
-});
+let server;
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(`\n=================================================`);
+    console.log(`🚀 Sistem E-Voting OSIS & MPK Aktif!`);
+    console.log(`📡 URL Aplikasi: http://localhost:${PORT}`);
+    console.log(`=================================================\n`);
+  });
+}
+
+module.exports = app;

@@ -1,8 +1,35 @@
 const http = require('http');
+const app = require('./app');
+const prisma = require('./models/db');
+
+async function checkServerRunning(port) {
+  return new Promise((resolve) => {
+    const req = http.get(`http://localhost:${port}/live-count`, (res) => {
+      res.resume();
+      resolve(true);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(1000, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
 
 async function runScenarioTest() {
   console.log('🧪 Memulai Pengujian Otomatis 5 Skenario Sistem E-Voting...\n');
-  const baseUrl = 'http://localhost:3000';
+  const port = process.env.PORT || 3000;
+  const baseUrl = `http://localhost:${port}`;
+
+  let serverInstance = null;
+  const isRunning = await checkServerRunning(port);
+  if (!isRunning) {
+    console.log(`ℹ️  Server belum berjalan di port ${port}, menjalankan server internal...`);
+    serverInstance = app.listen(port);
+    await new Promise(r => setTimeout(r, 500));
+  } else {
+    console.log(`ℹ️  Terhubung ke server yang aktif di port ${port}`);
+  }
 
   // Helper untuk HTTP request dengan cookie session
   function request(urlPath, method = 'GET', data = null, cookies = '') {
@@ -46,28 +73,35 @@ async function runScenarioTest() {
   }
 
   try {
+    // ─── Reset Status Andi Pratama agar pengujian idempotent ───────────────────
+    await prisma.voter.update({
+      where: { nisn: '0051234001' },
+      data: { hasVoted: false, votedAt: null, token: null },
+    });
+
     // ─── 0. Admin Login & Buka Sesi ──────────────────────────────────────────
-    console.log('[Langkah 0] Login Admin & Buka Sesi Pemilihan...');
+    console.log('[Langkah 0] Login Admin & Pastikan Sesi Pemilihan Terbuka...');
     const adminLoginRes = await request('/auth/login', 'POST', { username: 'admin', password: 'password123' });
     const adminCookies = adminLoginRes.cookies;
     console.log('   Admin Login Status:', adminLoginRes.statusCode);
 
-    // Toggle sesi agar isOpen = true
-    await request('/admin/session/toggle', 'POST', {}, adminCookies);
-    console.log('   Sesi voting dibuka oleh Admin.\n');
+    let session = await prisma.votingSession.findFirst();
+    if (!session || !session.isOpen) {
+      await request('/admin/session/toggle', 'POST', {}, adminCookies);
+      console.log('   Sesi voting dibuka oleh Admin.\n');
+    } else {
+      console.log('   Sesi voting sudah dalam status BUKA.\n');
+    }
 
     // ─── SKENARIO 1: Panitia Generate Token untuk Andi Pratama ───────────────
     console.log('📌 [SKENARIO 1] Panitia Login & Generate Token Pemilih (Andi Pratama - NISN: 0051234001)...');
     const panitiaLoginRes = await request('/auth/login', 'POST', { username: 'panitia', password: 'password123' });
     const panitiaCookies = panitiaLoginRes.cookies;
 
-    // Andi Pratama memiliki id = 1
-    const genTokenRes = await request('/panitia/voters/1/token', 'POST', {}, panitiaCookies);
+    const voterTarget = await prisma.voter.findUnique({ where: { nisn: '0051234001' } });
+    const genTokenRes = await request(`/panitia/voters/${voterTarget.id}/token`, 'POST', {}, panitiaCookies);
     console.log('   Generate Token Status:', genTokenRes.statusCode);
 
-    // Ambil token dari database
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
     const voter = await prisma.voter.findUnique({ where: { nisn: '0051234001' } });
     console.log(`   ✅ Token berhasil diterbitkan untuk ${voter.nama}: "${voter.token}"\n`);
 
@@ -88,8 +122,8 @@ async function runScenarioTest() {
 
     // ─── SKENARIO 3 & 4: Coblos Paslon 01, Suara Masuk, Token Hangus ────────
     console.log('📌 [SKENARIO 3 & 4] Siswa mencoblos Paslon Nomor Urut 01...');
-    // Paslon 1 memiliki id = 1
-    const coblosRes = await request('/pemilih/vote', 'POST', { candidateId: 1 }, voterCookies);
+    const paslon1Before = await prisma.candidate.findUnique({ where: { nomorUrut: 1 } });
+    const coblosRes = await request('/pemilih/vote', 'POST', { candidateId: paslon1Before.id }, voterCookies);
     console.log('   Status Coblos:', coblosRes.statusCode, `(Redirect: ${coblosRes.headers.location})`);
 
     const voterAfterVote = await prisma.voter.findUnique({ where: { nisn: '0051234001' } });
@@ -122,6 +156,11 @@ async function runScenarioTest() {
     console.log('🎉 SELURUH 5 SKENARIO PENGUJIAN SISTEM BERHASIL 100% LULUS (PASSED)!');
   } catch (err) {
     console.error('Pengujian gagal:', err);
+    process.exitCode = 1;
+  } finally {
+    if (serverInstance) {
+      serverInstance.close();
+    }
   }
 }
 

@@ -13,7 +13,14 @@ exports.showBilik = async (req, res) => {
 
 // ─── VERIFIKASI TOKEN & NISN ──────────────────────────────────────────────
 exports.verifyToken = async (req, res) => {
-  const { nisn, token } = req.body;
+  const nisn = (req.body.nisn || '').trim();
+  const token = (req.body.token || '').trim().toUpperCase();
+
+  if (!nisn || !token) {
+    req.flash('error', 'Nomor NISN dan Token wajib diisi.');
+    return res.redirect('/pemilih/bilik');
+  }
+
   try {
     const session = await prisma.votingSession.findFirst();
     if (!session?.isOpen) {
@@ -37,7 +44,7 @@ exports.verifyToken = async (req, res) => {
     res.redirect('/pemilih/pilih');
   } catch (e) {
     console.error(e);
-    req.flash('error', 'Terjadi kesalahan sistem.');
+    req.flash('error', 'Terjadi kesalahan sistem: ' + e.message);
     res.redirect('/pemilih/bilik');
   }
 };
@@ -77,7 +84,6 @@ exports.doVote = async (req, res) => {
   }
 
   try {
-    // ── Re-check sesi ─────────────────────────────────────────────────────
     const session = await prisma.votingSession.findFirst();
     if (!session?.isOpen) {
       req.flash('error', 'Sesi voting sudah ditutup.');
@@ -85,37 +91,42 @@ exports.doVote = async (req, res) => {
       return res.redirect('/pemilih/bilik');
     }
 
-    // ── Re-check voter belum vote (race-condition guard) ──────────────────
-    const voter = await prisma.voter.findUnique({ where: { id: votingVoter.id } });
-    if (!voter || voter.hasVoted) {
-      req.flash('error', 'Anda sudah memberikan suara atau sesi tidak valid.');
-      delete req.session.votingVoter;
-      return res.redirect('/pemilih/bilik');
-    }
-
-    // ── Transaksi atomik ──────────────────────────────────────────────────
     const kodeVerifikasi = uuidv4().toUpperCase();
-    await prisma.$transaction([
+
+    // Transaksi atomik interaktif untuk mengunci pembatalan ganda (race condition)
+    await prisma.$transaction(async (tx) => {
+      const currentVoter = await tx.voter.findUnique({ where: { id: votingVoter.id } });
+      if (!currentVoter || currentVoter.hasVoted) {
+        throw new Error('ALREADY_VOTED');
+      }
+
+      const candidateExists = await tx.candidate.findUnique({ where: { id: candidateId } });
+      if (!candidateExists) {
+        throw new Error('INVALID_CANDIDATE');
+      }
+
       // Tambah suara ke kandidat
-      prisma.candidate.update({
+      await tx.candidate.update({
         where: { id: candidateId },
         data: { suaraCount: { increment: 1 } },
-      }),
+      });
+
       // Hanguskan token + tandai sudah vote
-      prisma.voter.update({
-        where: { id: voter.id },
+      await tx.voter.update({
+        where: { id: currentVoter.id },
         data: { hasVoted: true, votedAt: new Date(), token: null },
-      }),
-      // Catat audit tanpa identitas pemilih
-      prisma.voteAudit.create({
+      });
+
+      // Catat audit suara tanpa menyimpan identitas pemilih (prinsip RAHASIA)
+      await tx.voteAudit.create({
         data: { candidateId, kodeVerifikasi },
-      }),
-    ]);
+      });
+    });
 
     const candidate = await prisma.candidate.findUnique({ where: { id: candidateId } });
-    await logAudit(req, 'VOTE_CAST', `Suara sah tercatat untuk Paslon No. ${candidate?.nomorUrut}. Kode: ${kodeVerifikasi.substring(0,8)}`);
+    await logAudit(req, 'VOTE_CAST', `Suara sah tercatat untuk Paslon No. ${candidate?.nomorUrut}. Kode: ${kodeVerifikasi.substring(0, 8)}`);
 
-    // Hapus data voter dari session
+    // Hapus data voter dari session bilik suara
     delete req.session.votingVoter;
 
     // Simpan bukti ke session untuk halaman sukses
@@ -127,6 +138,15 @@ exports.doVote = async (req, res) => {
 
     res.redirect('/pemilih/sukses');
   } catch (e) {
+    if (e.message === 'ALREADY_VOTED') {
+      req.flash('error', 'Anda sudah memberikan suara atau sesi tidak valid.');
+      delete req.session.votingVoter;
+      return res.redirect('/pemilih/bilik');
+    }
+    if (e.message === 'INVALID_CANDIDATE') {
+      req.flash('error', 'Paslon yang dipilih tidak valid.');
+      return res.redirect('/pemilih/pilih');
+    }
     console.error(e);
     req.flash('error', 'Terjadi kesalahan saat menyimpan suara. Hubungi panitia.');
     res.redirect('/pemilih/pilih');

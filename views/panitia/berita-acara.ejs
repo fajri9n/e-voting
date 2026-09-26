@@ -109,13 +109,17 @@
       </table>
     </div>
 
-    <!-- Pernyataan Pemenang -->
+    <!-- Pernyataan Pemenang / Status Hasil -->
     <% if (pemenang && totalSuara > 0) { %>
       <div class="p-3 mb-8 bg-slate-50 border border-slate-300 rounded-lg text-xs font-sans leading-relaxed">
         Berdasarkan hasil rekapitulasi suara sah, pasangan calon nomor urut <strong>0<%= pemenang.nomorUrut %></strong> atas nama 
         <strong><%= pemenang.namaKetua %></strong> &amp; <strong><%= pemenang.namaWakil %></strong> 
         dinyatakan memperoleh suara terbanyak sejumlah <strong><%= pemenang.suaraCount %> suara</strong> dan berhak ditetapkan sebagai 
         Ketua dan Wakil Ketua OSIS Terpilih.
+      </div>
+    <% } else if (typeof isTie !== 'undefined' && isTie && totalSuara > 0) { %>
+      <div class="p-3 mb-8 bg-amber-50 border border-amber-300 rounded-lg text-xs font-sans leading-relaxed text-amber-900">
+        <strong>CATATAN KHUSUS HASIL BERIMBANG (SERI):</strong> Berdasarkan hasil rekapitulasi suara sah, terdapat perolehan suara berimbang (seri) pada posisi teratas. Sesuai AD/ART dan regulasi KPU OSIS, mekanisme penentuan pemenang atau putaran lanjutan diserahkan kepada musyawarah mufakat Pembina OSIS dan MPK.
       </div>
     <% } %>
 

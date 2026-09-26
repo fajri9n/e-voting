@@ -10,8 +10,13 @@ exports.showLogin = (req, res) => {
 
 // POST /auth/login
 exports.doLogin = async (req, res) => {
-  const { username, password } = req.body;
+  const username = (req.body.username || '').trim();
+  const password = req.body.password || '';
   try {
+    if (!username || !password) {
+      req.flash('error', 'Username dan password wajib diisi.');
+      return res.redirect('/auth/login');
+    }
     const user = await prisma.user.findUnique({ where: { username } });
     if (!user) {
       req.flash('error', 'Username tidak ditemukan.');

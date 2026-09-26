@@ -98,18 +98,60 @@
       </nav>
 
       <!-- User Dropdown & Logout -->
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2 sm:space-x-3">
         <div class="text-right hidden sm:block">
           <p class="text-xs font-semibold text-slate-800 leading-tight"><%= user.nama %></p>
           <p class="text-[11px] text-slate-500">@<%= user.username %></p>
         </div>
         <form action="/auth/logout" method="POST" class="inline">
           <button type="submit" title="Keluar dari sistem" class="inline-flex items-center px-3 py-1.5 border border-red-200 text-xs font-semibold rounded-lg text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-300 transition">
-            <i class="fa-solid fa-arrow-right-from-bracket mr-1.5"></i>Logout
+            <i class="fa-solid fa-arrow-right-from-bracket mr-1.5"></i><span class="hidden sm:inline">Logout</span>
           </button>
         </form>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button type="button" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none" aria-label="Toggle Menu">
+          <i class="fa-solid fa-bars text-lg"></i>
+        </button>
       </div>
     </div>
+  </div>
+
+  <!-- Mobile Navigation Drawer -->
+  <div id="mobileMenu" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1 shadow-lg">
+    <% if (user.role === 'ADMIN') { %>
+      <a href="/admin/dashboard" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-chart-pie mr-2 text-blue-600 w-5"></i>Dashboard
+      </a>
+      <a href="/admin/candidates" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-users mr-2 text-indigo-600 w-5"></i>Paslon
+      </a>
+      <a href="/admin/voters" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-id-card mr-2 text-teal-600 w-5"></i>DPT Pemilih
+      </a>
+      <a href="/admin/quick-count" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-square-poll-vertical mr-2 text-emerald-600 w-5"></i>Quick Count
+      </a>
+      <a href="/admin/audit-log" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-clock-rotate-left mr-2 text-amber-600 w-5"></i>Audit Log
+      </a>
+    <% } else if (user.role === 'PANITIA_TPS') { %>
+      <a href="/panitia/dashboard" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-gauge mr-2 text-blue-600 w-5"></i>Dashboard TPS
+      </a>
+      <a href="/panitia/voters" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-user-check mr-2 text-emerald-600 w-5"></i>Verifikasi & Token
+      </a>
+      <a href="/panitia/quick-count" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-chart-column mr-2 text-indigo-600 w-5"></i>Quick Count
+      </a>
+      <a href="/panitia/berita-acara" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 text-slate-700">
+        <i class="fa-solid fa-file-invoice mr-2 text-purple-600 w-5"></i>Berita Acara
+      </a>
+    <% } %>
+    <a href="/live-count" target="_blank" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-blue-600">
+      <i class="fa-solid fa-tower-broadcast text-rose-500 mr-2 w-5 animate-pulse"></i>Live Publik
+    </a>
   </div>
 </header>
 <% } %>

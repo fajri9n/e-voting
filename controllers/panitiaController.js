@@ -40,8 +40,18 @@ exports.generateToken = async (req, res) => {
       req.flash('warning', `${voter.nama} sudah memberikan suara. Token tidak dapat digenerate ulang.`);
       return res.redirect('/panitia/voters');
     }
-    // Generate token sekali pakai: 8 karakter alphanumeric uppercase
-    const token = uuidv4().replace(/-/g, '').substring(0, 8).toUpperCase();
+    
+    // Generate token unik sekali pakai (8 karakter alphanumeric uppercase)
+    let token;
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 10) {
+      attempts++;
+      token = uuidv4().replace(/-/g, '').substring(0, 8).toUpperCase();
+      const existing = await prisma.voter.findUnique({ where: { token } });
+      if (!existing) isUnique = true;
+    }
+
     await prisma.voter.update({ where: { id }, data: { token } });
     await logAudit(req, 'GENERATE_TOKEN', `Token "${token}" digenerate untuk pemilih "${voter.nama}" (NISN: ${voter.nisn}).`);
     req.flash('success', `Token untuk ${voter.nama}: <strong>${token}</strong> – Serahkan kepada pemilih.`);
@@ -79,19 +89,28 @@ exports.beritaAcara = async (req, res) => {
   const totalSuara  = voters.filter(v => v.hasVoted).length;
   const totalDPT    = voters.length;
   const totalAbsen  = totalDPT - totalSuara;
-  const pemenang    = candidates.reduce((a, b) => (a.suaraCount > b.suaraCount ? a : b), candidates[0] || null);
+
+  const maxSuara = Math.max(...candidates.map(c => c.suaraCount), 0);
+  const topCandidates = candidates.filter(c => c.suaraCount === maxSuara && maxSuara > 0);
+  const isTie = topCandidates.length > 1;
+  const pemenang = isTie ? null : (topCandidates[0] || null);
+
   const nowDate     = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   res.render('panitia/berita-acara', {
     title: 'Berita Acara Rekapitulasi – Panitia',
     candidates, voters, session, auditCount,
-    totalSuara, totalDPT, totalAbsen, pemenang, nowDate,
+    totalSuara, totalDPT, totalAbsen, pemenang, isTie, nowDate,
   });
 };
 
 // ─── VERIFIKASI MANUAL ───────────────────────────────────────────────────────
 exports.verifikasiVoter = async (req, res) => {
-  const { nisn } = req.body;
+  const nisn = (req.body.nisn || '').trim();
+  if (!nisn) {
+    req.flash('error', 'Masukkan nomor NISN pemilih terlebih dahulu.');
+    return res.redirect('/panitia/voters');
+  }
   try {
     const voter = await prisma.voter.findUnique({ where: { nisn } });
     if (!voter) {

@@ -72,10 +72,19 @@ async function main() {
     },
   ];
 
+  await prisma.voteAudit.deleteMany();
+
   for (const c of candidates) {
     await prisma.candidate.upsert({
       where: { nomorUrut: c.nomorUrut },
-      update: { fotoUrl: c.fotoUrl },
+      update: { 
+        fotoUrl: c.fotoUrl, 
+        namaKetua: c.namaKetua, 
+        namaWakil: c.namaWakil, 
+        visi: c.visi, 
+        misi: c.misi,
+        suaraCount: 0 
+      },
       create: c,
     });
   }
@@ -108,7 +117,7 @@ async function main() {
   for (const v of voters) {
     await prisma.voter.upsert({
       where: { nisn: v.nisn },
-      update: {},
+      update: { hasVoted: false, votedAt: null, token: null, nama: v.nama, kelas: v.kelas },
       create: v,
     });
   }
